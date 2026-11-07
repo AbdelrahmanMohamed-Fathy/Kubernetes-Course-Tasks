@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: task-1
+  name: task-1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: task-1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: task-1
+    spec:
+      shareProcessNamespace: true
+      initContainers:
+        - name: init-done
+          image: busybox:1.36
+          command: ["echo", "done"]
+
+        # sidecar
+        - name: time-updater
+          image: busybox:1.36
+          command:
+            - "sh"
+            - "-c"
+            - |
+              # Wait until nginx starts and its process is visible
+              until pgrep nginx > /dev/null; do sleep 1; done
+
+              # Target nginx's master or worker process ID
+              NGINX_PID=$(pgrep -o nginx)
+              echo $NGINX_PID
+
+              # Write continuously into the Nginx container's root file system via /proc
+              while true; do
+                echo "hello in MLOPS MENA COMMUNITY : $(date '+%Y-%m-%d %H:%M:%S')" > /proc/$NGINX_PID/root/usr/share/nginx/html/index.html;
+                sleep 5s;
+              done
+          restartPolicy: Always
+
+      containers:
+      - image: nginx:1.27
+        name: nginx
+        ports:
+          - containerPort: 80
+        resources: {}
+status: {}
