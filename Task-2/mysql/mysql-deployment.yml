@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mysql
+  name: mysql
+  namespace: webapp-stack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - image: webapp-mysql:task2
+        name: webapp-mysql
+        imagePullPolicy: IfNotPresent
+        resources: {}
+
+        ports:
+        - containerPort: 3306
+        
+        readinessProbe:
+          exec:
+            command:
+            - mysqladmin 
+            - ping 
+            - -h 
+            - 127.0.0.1
+          initialDelaySeconds: 60
+          periodSeconds: 5
+
+        env:
+        - name: APP_DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: webapp-config
+              key: MYSQL_DATABASE
+        - name: APP_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: app-user        
+        - name: APP_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: app-password
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: root-password
+
+        volumeMounts:
+        - name: app-storage
+          mountPath: /var/lib/mysql
+
+      volumes:
+      - name: app-storage
+        persistentVolumeClaim:
+          claimName: mysql-pvc
+status: {}
