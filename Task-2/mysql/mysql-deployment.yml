@@ -22,9 +22,6 @@ spec:
         name: webapp-mysql
         imagePullPolicy: IfNotPresent
         resources: {}
-
-        ports:
-        - containerPort: 3306
         
         readinessProbe:
           exec:
