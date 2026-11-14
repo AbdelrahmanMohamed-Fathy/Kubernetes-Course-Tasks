@@ -9,10 +9,11 @@ ENV APP_DB_NAME=webapp \
     MYSQL_INITDB_SKIP_TZINFO=1
 
 # Server settings
-COPY conf/mysql.cnf /etc/mysql/conf.d/mysql.cnf
+COPY --chmod=0644 conf/mysql.cnf /etc/mysql/conf.d/mysql.cnf
 
 # Tables and default data used by the app
-COPY schema/schema.sql /opt/webapp/schema.sql
+COPY --chmod=0644 schema/schema.sql /opt/webapp/schema.sql
+RUN chmod 0755 /opt/webapp
 
 # Runs once, on the first start with an empty data directory
-COPY initdb/01-setup.sh /docker-entrypoint-initdb.d/01-setup.sh
+COPY --chmod=0644 initdb/01-setup.sh /docker-entrypoint-initdb.d/01-setup.sh
