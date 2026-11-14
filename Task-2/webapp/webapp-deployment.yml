@@ -38,3 +38,15 @@ spec:
         envFrom:
         - configMapRef:
             name: webapp-config
+        
+        env:
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: app-user        
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: app-password
